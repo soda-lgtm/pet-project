@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>妙麗歲數計算機</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg-body: #fff6ec;
+      --bg-card: #fffaf5;
+      --accent: #ffbfa3;
+      --accent-deep: #ff8f6e;
+      --text-main: #333333;
+      --text-muted: #777777;
+      --border-soft: #f1d5c1;
+      --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --radius-lg: 18px;
+      --radius-md: 10px;
+      --transition-fast: 0.18s ease-out;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+        sans-serif;
+      background: radial-gradient(circle at top left, #ffe9cf, #fff6ec 45%);
+      color: var(--text-main);
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    .page-root {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .calculator-wrapper {
+      width: 100%;
+      max-width: 1200px;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 左側狗狗圖片區 */
+    .hero-image-area {
+      position: relative;
+      width: 100%;
+      height: 260px;
+      overflow: hidden;
+      background: #fdf0e3;
+    }
+
+    .hero-image-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.03);
+    }
+
+    .hero-image-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        120deg,
+        rgba(0, 0, 0, 0.25),
+        rgba(0, 0, 0, 0.05)
+      );
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 248, 237, 0.95);
+      font-size: 13px;
+      color: #8a5a3a;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hero-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #ff8f6e;
+      box-shadow: 0 0 0 4px rgba(255, 143, 110, 0.3);
+    }
+
+    /* 右側計算卡片區 */
+    .right-panel {
+      padding: 18px 16px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-emoji {
+      font-size: 26px;
+    }
+
+    .title-text {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      padding: 16px 14px 18px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .form-label span.label-tag {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: #ffe9d3;
+      color: #925a33;
+      font-weight: 500;
+    }
+
+    .date-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="date"] {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #e2c7b4;
+      font-size: 14px;
+      color: #4a3a30;
+      background: #fffaf5;
+      outline: none;
+      transition: border-color var(--transition-fast),
+        box-shadow var(--transition-fast), background var(--transition-fast);
+    }
+
+    input[type="date"]:focus {
+      border-color: var(--accent);
+      background: #fffdf8;
+      box-shadow: 0 0 0 2px rgba(255, 191, 163, 0.5);
+    }
+
+    /* 按鈕樣式與點擊效果 */
+    .actions-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn-primary {
+      position: relative;
+      padding: 9px 18px;
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent-deep), #ffc48e);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(255, 143, 110, 0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform var(--transition-fast),
+        box-shadow var(--transition-fast), filter var(--transition-fast);
+      overflow: hidden;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(255, 143, 110, 0.6);
+      filter: brightness(1.02);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97) translateY(1px);
+      box-shadow: 0 2px 8px rgba(255, 143, 110, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-primary .btn-icon {
+      font-size: 15px;
+    }
+
+    .helper-text {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .error-text {
+      color: #b5432b;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .result-box {
+      margin-top: 2px;
+      padding: 12px 10px;
+      border-radius: 10px;
+      background: #fff6ec;
+      border: 1px dashed #f0c9a6;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .highlight-number {
+      font-weight: 700;
+      color: #c45b32;
+    }
+
+    .tag-small {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: #ffe2d2;
+      font-size: 11px;
+      color: #9a4d33;
+      margin-left: 4px;
+    }
+
+    .secondary-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .secondary-note code {
+      font-family: Consolas, "SFMono-Regular", Menlo, Monaco, monospace;
+      font-size: 11px;
+      background: #fff2e2;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    /* ==================== CSS 區塊插槽：主題／版面可在這裡覆寫 ==================== */
+    /*
+      開發者可以在此處覆寫顏色、字體或新增自訂元件樣式。
+      例如：
+      .page-root { background: #f0f0ff; }
+      .btn-primary { border-radius: 999px; }
+    */
+    /* ==================== CSS SLOT END =========================================== */
+
+    /* 彈出視窗（Modal） */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 380px;
+      background: #fffdf9;
+      border-radius: 16px;
+      box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
+      padding: 18px 16px 14px;
+      position: relative;
+      animation: popIn 0.22s ease-out;
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 4px;
+      color: #b06a3a;
+      border-radius: 999px;
+      transition: background 0.15s ease-out, transform 0.15s ease-out;
+    }
+
+    .modal-close:hover {
+      background: #ffeede;
+      transform: scale(1.05);
+    }
+
+    .modal-body {
+      font-size: 14px;
+      color: #5b4334;
+      line-height: 1.7;
+      padding-top: 4px;
+      border-top: 1px dashed #f0c9a6;
+    }
+
+    .modal-body .big-number {
+      font-size: 22px;
+      font-weight: 700;
+      color: #c45b32;
+      margin-bottom: 2px;
+    }
+
+    .modal-body .small-caption {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .modal-footer {
+      margin-top: 6px;
+      text-align: right;
+    }
+
+    .btn-secondary {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 999px;
+      border: 1px solid #f5c6a3;
+      background: #fff6ee;
+      color: #8f5e38;
+      cursor: pointer;
+      transition: background 0.15s ease-out, transform 0.15s ease-out,
+        box-shadow 0.15s ease-out;
+    }
+
+    .btn-secondary:hover {
+      background: #ffe7d5;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 中大型螢幕佈局：左右分欄 */
+    @media (min-width: 768px) {
+      .calculator-wrapper {
+        flex-direction: row;
+      }
+
+      .hero-image-area {
+        width: 50%;
+        height: auto;
+        min-height: 420px;
+      }
+
+      .right-panel {
+        width: 50%;
+        padding: 24px 22px 26px;
+      }
+
+      .title-text {
+        font-size: 22px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .right-panel {
+        padding: 28px 30px 30px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-root">
+    <main class="calculator-wrapper" aria-label="妙麗歲數計算機">
+      <!-- 左側狗狗示意圖片區 -->
+      <section class="hero-image-area" aria-hidden="true">
+        <img
+          src="https://hackmd.io/_uploads/Hyc4usZlWe.png"
+          alt="妙麗抬頭看著主人的照片"
+        />
+        <div class="hero-image-overlay"></div>
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span>
+          <span>跟著妙麗一起算歲數</span>
+        </div>
+      </section>
+
+      <!-- 右側計算卡片區 -->
+      <section class="right-panel">
+        <header>
+          <div class="title-row">
+            <div class="title-emoji">🐶</div>
+            <div class="title-text">妙麗歲數計算機</div>
+          </div>
+          <p class="subtitle">
+            輸入毛孩的出生日期，一鍵換算出「狗狗實際年齡」與「對應的人類年齡」，
+            用更貼近人類的方式，理解妙麗現在幾歲。
+          </p>
+        </header>
+
+        <section class="card" aria-label="狗狗年齡輸入區">
+          <div class="form-row">
+            <label class="form-label" for="dog-birthday">
+              狗狗的出生日期
+              <span class="label-tag">必填</span>
+            </label>
+            <div class="date-input-wrap">
+              <input
+                type="date"
+                id="dog-birthday"
+                name="dog-birthday"
+                aria-required="true"
+              />
+            </div>
+            <p class="helper-text">
+              例如：2023-02-28。（若日期在未來，會請你重新確認）
+            </p>
+            <p class="error-text" id="error-message" style="display: none"></p>
+          </div>
+
+          <div class="actions-row">
+            <button id="calculate-btn" class="btn-primary" type="button">
+              <span class="btn-icon">✨</span>
+              <span>開始計算</span>
+            </button>
+            <span class="helper-text">按一下，幫妙麗換算成「人類幾歲」。</span>
+          </div>
+
+          <div id="result-box" class="result-box">
+            <div id="result-lines">
+              還沒開始計算喔！輸入妙麗的生日後，點選
+              <span class="highlight-number">「開始計算」</span>，就會在這裡看到結果。
+            </div>
+            <div class="secondary-note">
+              計算公式：
+              <code>人類年齡 = 16 × ln(狗的年齡) + 31</code>
+              <span class="tag-small">以狗狗實際歲數換算</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================== HTML 區塊插槽：可加註解／注意事項 =================== -->
+        <!--
+          開發者可以在這段下方插入 FAQ、備註說明或其他 HTML 元件。
+          例如：
+          <section>如何幫毛孩紀錄健康年表？</section>
+        -->
+        <!-- ================== HTML SLOT END ===================================== -->
+      </section>
+    </main>
+  </div>
+
+  <!-- 彈出結果視窗 -->
+  <div id="result-modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="result-modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="result-modal-title">
+          <span>🎉 計算完成</span>
+        </div>
+        <button class="modal-close" type="button" id="modal-close-btn" aria-label="關閉視窗">
+          ×
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="big-number" id="modal-main-number"></div>
+        <div class="small-caption" id="modal-caption"></div>
+        <div id="modal-detail-text"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" type="button" id="modal-ok-btn">
+          好，帶妙麗去散步 🐾
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const dogBirthdayInput = document.getElementById("dog-birthday");
+      const calculateBtn = document.getElementById("calculate-btn");
+      const errorMessage = document.getElementById("error-message");
+      const resultBox = document.getElementById("result-box");
+      const resultLines = document.getElementById("result-lines");
+
+      const modalBackdrop = document.getElementById("result-modal-backdrop");
+      const modalMainNumber = document.getElementById("modal-main-number");
+      const modalCaption = document.getElementById("modal-caption");
+      const modalDetail = document.getElementById("modal-detail-text");
+      const modalCloseBtn = document.getElementById("modal-close-btn");
+      const modalOkBtn = document.getElementById("modal-ok-btn");
+
+      // 預設示範生日（可依需求刪除或調整）
+      dogBirthdayInput.value = "2023-02-28";
+
+      // 計算狗狗年齡與換算人類年齡
+      function calculateAges(birthdayString) {
+        const birthDate = new Date(birthdayString);
+        const today = new Date();
+
+        // 清除時間部分，僅比較日期
+        birthDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        const diffMs = today.getTime() - birthDate.getTime();
+        const msPerYear = 1000 * 60 * 60 * 24 * 365.25;
+        const dogAge = diffMs / msPerYear;
+
+        if (dogAge <= 0 || !isFinite(dogAge)) {
+          return null;
+        }
+
+        // 狗狗實際年齡（保留一位小數）
+        const dogAgeRounded = Math.round(dogAge * 10) / 10;
+
+        // 人類年齡 = 16 ln(狗的年齡) + 31
+        const humanAge = 16 * Math.log(dogAgeRounded) + 31;
+        const humanAgeRounded = Math.round(humanAge * 10) / 10;
+
+        return {
+          dogAge: dogAgeRounded,
+          humanAge: humanAgeRounded,
+        };
+      }
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = "block";
+      }
+
+      function clearError() {
+        errorMessage.textContent = "";
+        errorMessage.style.display = "none";
+      }
+
+      function openModal(dogAge, humanAge) {
+        modalMainNumber.textContent = `${humanAge.toFixed(1)} 歲`;
+        modalCaption.textContent = `以人類年齡來看，妙麗現在大約是 ${humanAge.toFixed(
+          1
+        )} 歲。`;
+        modalDetail.innerHTML = `
+          妙麗目前約為 <span class="highlight-number">${dogAge.toFixed(
+            1
+          )}</span> 歲狗狗年齡，
+          依照 <code>人類年齡 = 16 × ln(狗的年齡) + 31</code> 的公式換算，
+          約等同於 <span class="highlight-number">${humanAge.toFixed(
+            1
+          )}</span> 歲的人類。
+        `;
+        modalBackdrop.classList.add("active");
+      }
+
+      function closeModal() {
+        modalBackdrop.classList.remove("active");
+      }
+
+      // 按鈕點擊主流程
+      calculateBtn.addEventListener("click", function () {
+        clearError();
+
+        const birthdayValue = dogBirthdayInput.value;
+        if (!birthdayValue) {
+          showError("請先選擇狗狗的出生日期。");
+          return;
+        }
+
+        const birthDate = new Date(birthdayValue);
+        const today = new Date();
+        if (birthDate > today) {
+          showError("出生日期不能在未來，請再次確認。");
+          return;
+        }
+
+        calculateBtn.disabled = true;
+
+        const ages = calculateAges(birthdayValue);
+
+        if (!ages) {
+          showError("日期格式有點怪怪的，請重新選擇一次。");
+          calculateBtn.disabled = false;
+          return;
+        }
+
+        const dogAge = ages.dogAge;
+        const humanAge = ages.humanAge;
+
+        // 更新結果文字
+        resultLines.innerHTML = `
+          妙麗現在大約 <span class="highlight-number">${dogAge.toFixed(
+            1
+          )}</span> 歲狗狗年齡，<br />
+          換算成人類年齡大約是
+          <span class="highlight-number">${humanAge.toFixed(1)}</span> 歲。
+        `;
+
+        // 顯示彈出視窗
+        openModal(dogAge, humanAge);
+
+        // 模擬按鈕點擊效果的微延遲恢復
+        setTimeout(() => {
+          calculateBtn.disabled = false;
+        }, 260);
+      });
+
+      // Modal 關閉邏輯
+      modalCloseBtn.addEventListener("click", closeModal);
+      modalOkBtn.addEventListener("click", closeModal);
+      modalBackdrop.addEventListener("click", function (event) {
+        if (event.target === modalBackdrop) {
+          closeModal();
+        }
+      });
+
+      // 鍵盤 ESC 關閉
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
